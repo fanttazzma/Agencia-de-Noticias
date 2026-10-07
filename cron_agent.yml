@@ -1,0 +1,33 @@
+name: Enviar Boletín IA Semanal
+
+on:
+  schedule:
+    # Se ejecuta todos los jueves a las 13:00 UTC (7:00 AM hora del centro de México)
+    - cron: '0 13 * * 4'
+  workflow_dispatch: # Permite ejecutarlo manualmente con un botón
+
+jobs:
+  ejecutar-agente:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-generativeai feedparser jinja2 python-dotenv
+
+      - name: Ejecutar Agente de IA
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+        run: python tarea_programada.py
