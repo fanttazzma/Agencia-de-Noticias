@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard IA y Educación — Maqueta</title>
+<style>
+  :root { --bg:#f3f5f8; --card:#fff; --ink:#1f2933; --mute:#66788a; --line:#e1e6ec; --brand:#0b3d6e; --acc:#1c6dd0;
+          --c1:#1c6dd0; --c2:#e08a00; --c3:#1b8a5a; --c4:#8b5cf6; --c5:#d14343; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  header { background:var(--brand); color:#fff; padding:18px 24px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; }
+  header h1 { margin:0; font-size:20px; }
+  header .sub { font-size:13px; color:#c9dcf1; }
+  .warn { background:#fff4e0; color:#8a5300; font-size:13px; padding:8px 24px; border-bottom:1px solid #f1d9a8; }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; padding:16px 24px 0; }
+  .tab { border:1px solid var(--line); background:var(--card); padding:8px 14px; border-radius:20px; cursor:pointer; font-size:14px; color:var(--ink); }
+  .tab.on { background:var(--acc); color:#fff; border-color:var(--acc); }
+  .q { padding:12px 24px 0; font-size:14px; color:var(--mute); }
+  .q b { color:var(--ink); }
+  main { padding:16px 24px 32px; display:grid; gap:16px; grid-template-columns: repeat(12, 1fr); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .kpi { grid-column: span 3; }
+  .kpi .v { font-size:28px; font-weight:700; margin-top:4px; }
+  .kpi .l { font-size:13px; color:var(--mute); }
+  .kpi .d { font-size:12px; margin-top:4px; color:#1b8a5a; }
+  .kpi .d.neg { color:#d14343; }
+  .wide { grid-column: span 7; }
+  .side { grid-column: span 5; }
+  .full { grid-column: span 12; }
+  h3 { margin:0 0 12px; font-size:15px; }
+  .bar { display:flex; align-items:center; gap:8px; margin:8px 0; font-size:13px; }
+  .bar .n { width:150px; flex-shrink:0; }
+  .bar .t { flex:1; background:#edf1f5; border-radius:4px; height:16px; overflow:hidden; }
+  .bar .f { height:100%; border-radius:4px; }
+  .bar .p { width:40px; text-align:right; color:var(--mute); }
+  .news { list-style:none; margin:0; padding:0; }
+  .news li { padding:10px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .news li:last-child { border-bottom:0; }
+  .news a { color:var(--acc); text-decoration:none; font-weight:600; }
+  .news .s { font-size:12px; color:var(--mute); }
+  .alert { display:flex; gap:10px; padding:10px; border-radius:8px; background:#fdecec; color:#8f1f1f; font-size:13px; margin-bottom:8px; }
+  .alert.info { background:#e9f2fd; color:#0b3d6e; }
+  svg text { font-size:11px; fill:var(--mute); }
+  .lg { display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--mute); margin-top:6px; }
+  .lg i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+  @media (max-width:900px){ .kpi{grid-column:span 6} .wide,.side{grid-column:span 12} }
+  @media (max-width:520px){ main,.tabs,.q{padding-left:16px;padding-right:16px} .kpi{grid-column:span 12} .bar .n{width:110px} }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Observatorio semanal · IA y Educación</h1>
+    <div class="sub">Alimentado por el agente de noticias · se actualiza cada jueves</div>
+  </div>
+  <div class="sub">Corte: 2 oct 2026 · últimas 8 semanas</div>
+</header>
+<div class="tabs" id="tabs"></div>
+<div class="q" id="q"></div>
+<main id="main"></main>
+
+<script>
+const CATS = [
+  { k:"Política pública", c:"var(--c1)" },
+  { k:"Investigación", c:"var(--c2)" },
+  { k:"Formación docente", c:"var(--c3)" },
+  { k:"Herramientas", c:"var(--c4)" },
+  { k:"Integridad académica", c:"var(--c5)" },
+];
+// Menciones semanales por categoría (ILUSTRATIVO)
+const WEEKS = ["S32","S33","S34","S35","S36","S37","S38","S39"];
+const SERIES = {
+  "Política pública":     [4,5,4,6,9,11,8,10],
+  "Investigación":        [3,3,4,4,5,5,6,7],
+  "Formación docente":    [2,3,3,4,4,6,7,8],
+  "Herramientas":         [8,7,9,8,7,6,6,5],
+  "Integridad académica": [5,6,5,7,6,5,4,4],
+};
+let NEWS = []; // Empieza vacío
+
+// Esta función conecta tu HTML con tu backend de Python
+async function cargarNoticiasVivas() {
+  try {
+    // Cambia la ruta según dónde hostees el dashboard, esto es para tu PC local
+    const respuesta = await fetch('http://127.0.0.1:8000/api/noticias'); 
+    const json = await respuesta.json();
+    
+    // Inyectamos las 5 noticias de Gemini directo en tu lógica
+    if(json.status === "success") {
+        NEWS = json.data.news;
+        render("dir"); // Vuelve a dibujar el dashboard con datos frescos
+    }
+  } catch(e) {
+    console.error("Fallo al conectar con el Agente IA", e);
+  }
+}
+
+// Ejecutar al cargar la página
+cargarNoticiasVivas();
+
+const ROLES = {
+  dir: {
+    n:"Directivos", q:"¿Qué riesgos u oportunidades institucionales hay que atender?",
+    kpis:[["Noticias analizadas (mes)","184","+12% vs mes anterior"],["Sobre regulación","38","+9 esta semana"],["Casos de universidades MX","11","+3"],["Alertas activas","2","requieren atención",true]],
+    alerts:[["🔴","Organismos regionales (UNESCO) definen agenda 2027 de IA en educación: revisar lineamientos institucionales."],["🔵","Universidades estatales (UAN) ya realizan foros propios: posible referente para la UNACH.",1]],
+    focus:"Política pública",
+  },
+  coord: {
+    n:"Coordinación académica", q:"¿Qué debe cambiar en planes, programas y formación docente?",
+    kpis:[["Noticias sobre currículo","27","+4"],["Sobre formación docente","31","+8"],["Programas nuevos de IA (MX)","43","acumulado ANUIES"],["Convocatorias detectadas","3","este mes"]],
+    alerts:[["🔵","La formación docente es la categoría que más creció en 8 semanas.",1]],
+    focus:"Formación docente",
+  },
+  doc: {
+    n:"Docentes", q:"¿Qué puedo aplicar o cuidar en mi clase esta semana?",
+    kpis:[["Herramientas mencionadas","22","−3"],["Estrategias de evaluación","9","+2"],["Sobre integridad académica","14","estable"],["Recursos gratuitos","6","este mes"]],
+    alerts:[["🔵","Estrategia de la semana: instrucción entre pares y rediseño de evaluación (Mazur).",1]],
+    focus:"Integridad académica",
+  },
+  inv: {
+    n:"Investigadores", q:"¿Qué evidencia nueva se está publicando?",
+    kpis:[["Estudios citados (mes)","19","+5"],["Revisiones sistemáticas","2","este mes"],["Fuentes académicas","34%","del total"],["Temas emergentes","4","+1"]],
+    alerts:[["🔵","Stanford revisó +800 estudios: hay vacío de evidencia sobre IA en aula. Posible línea de investigación.",1]],
+    focus:"Investigación",
+  },
+};
+
+function lineChart() {
+  const W=600,H=220,P=30, max=12;
+  const x=i=>P+i*(W-2*P)/(WEEKS.length-1), y=v=>H-P-(v/max)*(H-2*P);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tendencia por categoría">`;
+  for(let g=0;g<=max;g+=4) s+=`<line x1="${P}" x2="${W-P}" y1="${y(g)}" y2="${y(g)}" stroke="#e1e6ec"/><text x="4" y="${y(g)+4}">${g}</text>`;
+  WEEKS.forEach((w,i)=> s+=`<text x="${x(i)-10}" y="${H-8}">${w}</text>`);
+  CATS.forEach(c=>{
+    const pts=SERIES[c.k].map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+    s+=`<polyline points="${pts}" fill="none" stroke="${c.c}" stroke-width="2.5"/>`;
+  });
+  s+=`</svg><div class="lg">${CATS.map(c=>`<span><i style="background:${c.c}"></i>${c.k}</span>`).join("")}</div>`;
+  return s;
+}
+
+function bars() {
+  const tot = CATS.map(c=>[c, SERIES[c.k].slice(-4).reduce((a,b)=>a+b,0)]);
+  const sum = tot.reduce((a,[,v])=>a+v,0);
+  return tot.sort((a,b)=>b[1]-a[1]).map(([c,v])=>{
+    const p=Math.round(v*100/sum);
+    return `<div class="bar"><span class="n">${c.k}</span><span class="t"><span class="f" style="display:block;width:${p*2.5}%;background:${c.c}"></span></span><span class="p">${p}%</span></div>`;
+  }).join("");
+}
+
+function render(id){
+  const r=ROLES[id];
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on", b.dataset.id===id));
+  document.getElementById("q").innerHTML=`Pregunta que responde esta vista: <b>${r.q}</b>`;
+  const news = NEWS.filter(n=>n.r.includes(id));
+  document.getElementById("main").innerHTML =
+    r.kpis.map(([l,v,d,neg])=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d ${neg?'neg':''}">${d}</div></div>`).join("") +
+    `<div class="card wide"><h3>Tendencia de temas (menciones por semana)</h3>${lineChart()}</div>` +
+    `<div class="card side"><h3>Alertas para ${r.n.toLowerCase()}</h3>${r.alerts.map(([i,t,info])=>`<div class="alert ${info?'info':''}"><span>${i}</span><span>${t}</span></div>`).join("")}
+      <h3 style="margin-top:16px">Distribución (últimas 4 semanas)</h3>${bars()}</div>` +
+    `<div class="card full"><h3>Noticias de esta semana relevantes para ${r.n.toLowerCase()}</h3><ul class="news">${news.map(n=>`<li><a href="${n.u}" target="_blank" rel="noopener">${n.t}</a><div class="s">${n.s}</div></li>`).join("")}</ul></div>`;
+}
+
+const tabs=document.getElementById("tabs");
+Object.entries(ROLES).forEach(([id,r])=>{
+  const b=document.createElement("button"); b.className="tab"; b.textContent=r.n; b.dataset.id=id;
+  b.onclick=()=>render(id); tabs.appendChild(b);
+});
+render("dir");
+</script>
+</body>
+</html>

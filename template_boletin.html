@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boletín IA y Educación</title>
+<style>
+  body { margin:0; background:#eef1f5; font-family: Arial, Helvetica, sans-serif; color:#1f2933; }
+  .inbox { max-width:680px; margin:24px auto; background:#fff; border:1px solid #d8dee6; border-radius:8px; overflow:hidden; }
+  .meta { padding:14px 20px; font-size:13px; color:#52606d; border-bottom:1px solid #e4e7eb; background:#f9fafb; }
+  .meta b { color:#1f2933; }
+  .header { background:#0b3d6e; color:#fff; padding:28px 28px 22px; }
+  .header .kicker { font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#9fc4ea; }
+  .header h1 { margin:6px 0 4px; font-size:26px; }
+  .header .week { font-size:14px; color:#d4e4f5; }
+  .intro { padding:20px 28px 6px; font-size:15px; line-height:1.55; }
+  .legend { padding:0 28px 8px; font-size:12px; color:#52606d; }
+  .item { margin:16px 28px; padding:18px 20px; border:1px solid #e4e7eb; border-left:5px solid #1c6dd0; border-radius:6px; }
+  .num { display:inline-block; width:26px; height:26px; line-height:26px; text-align:center; border-radius:50%; background:#0b3d6e; color:#fff; font-weight:bold; font-size:13px; margin-right:6px; }
+  .item h2 { display:inline; font-size:17px; line-height:1.35; }
+  .src { font-size:12px; color:#7b8794; margin:8px 0 10px; }
+  .item p { margin:6px 0; font-size:14px; line-height:1.55; }
+  .why { background:#f0f6fd; padding:8px 10px; border-radius:4px; }
+  .tags { margin-top:10px; }
+  .tag { display:inline-block; font-size:11px; padding:3px 8px; border-radius:10px; margin:2px 4px 2px 0; }
+  .cat { background:#fff4e0; color:#8a5300; }
+  .rol { background:#e8f5ee; color:#1b6b43; }
+  .link { display:inline-block; margin-top:10px; font-size:14px; color:#1c6dd0; font-weight:bold; text-decoration:none; }
+  .agenda { margin:20px 28px; padding:14px 18px; background:#fafbfc; border:1px dashed #c3ccd6; border-radius:6px; font-size:14px; line-height:1.5; }
+  .footer { padding:18px 28px 26px; font-size:12px; color:#7b8794; border-top:1px solid #e4e7eb; line-height:1.5; }
+  .badge { position:fixed; top:12px; right:12px; background:#1c6dd0; color:#fff; font-size:12px; padding:6px 10px; border-radius:4px; }
+  @media (max-width:600px){ .item,.agenda{margin:14px 12px} .intro,.legend,.footer{padding-left:14px;padding-right:14px} .header{padding:22px 16px} }
+</style>
+</head>
+<body>
+<div class="badge">BOLETÍN AUTOMÁTICO</div>
+<div class="inbox">
+  <div class="meta">
+    <b>De:</b> Agente Boletín IA &lt;boletin.ia@ejemplo.com&gt;<br>
+    <b>Para:</b> Equipo del proyecto<br>
+    <b>Asunto:</b> Boletín Semanal IA y Educación<br>
+    <b>Fecha:</b> Automática
+  </div>
+
+  <div class="header">
+    <div class="kicker">Boletín semanal · Agente de IA</div>
+    <h1>IA y Educación: las 5 de la semana</h1>
+    <div class="week">Edición automatizada</div>
+  </div>
+
+  <!-- Inyección de la introducción generada por IA -->
+  <div class="intro">
+    {{ data.intro }}
+  </div>
+  
+  <div class="legend">
+    <span class="tag cat">Categoría</span> tema de la noticia &nbsp;·&nbsp;
+    <span class="tag rol">Rol</span> a quién le sirve más
+  </div>
+
+  <!-- Diccionario Jinja para traducir las claves del JSON a texto legible -->
+  {% set role_names = {'dir': 'Directivos', 'coord': 'Coordinación académica', 'doc': 'Docentes', 'inv': 'Investigadores', 'est': 'Estudiantes'} %}
+
+  <!-- Ciclo dinámico que genera un bloque por cada noticia en el JSON -->
+  {% for n in data.news %}
+  <div class="item">
+    <span class="num">{{ loop.index }}</span><h2>{{ n.t }}</h2>
+    <div class="src">{{ n.s }}</div>
+    <p>{{ n.desc }}</p>
+    <p class="why"><b>Por qué importa:</b> {{ n.why }}</p>
+    <div class="tags">
+      <span class="tag cat">{{ n.cat }}</span>
+      <!-- Ciclo anidado para mostrar múltiples roles si los hay -->
+      {% for rol in n.r %}
+      <span class="tag rol">{{ role_names.get(rol, rol) }}</span>
+      {% endfor %}
+    </div>
+    <a class="link" href="{{ n.u }}">🔗 Leer nota completa</a>
+  </div>
+  {% endfor %}
+
+  <div class="agenda">
+    📅 <b>Para la agenda:</b> Revisa constantemente las actualizaciones de tu institución para eventos locales de IA.
+  </div>
+
+  <div class="footer">
+    Este boletín fue generado automáticamente por un agente de IA. Busca noticias de los últimos 7 días, elige las más relevantes y estructura los datos.<br>
+    Proyecto · Universidad Autónoma de Chiapas
+  </div>
+</div>
+</body>
+</html>
