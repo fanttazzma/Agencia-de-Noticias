@@ -10,7 +10,7 @@ def summarize_news(news_items):
         return None
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     # Convertimos las noticias extraídas a texto para que la IA las evalúe
     noticias_texto = ""
@@ -36,7 +36,7 @@ def summarize_news(news_items):
        - Noticia 2 (Tema: IA con la educación | Enfoque Jóvenes 18-30 años): Cómo la IA está cambiando la forma de estudiar, investigar o prepararse profesionalmente en la universidad (preferentemente en México).
        - Noticia 3 (Tema: IA internacional educación): Una noticia relevante a nivel global sobre regulaciones, descubrimientos o adopciones de IA en universidades del mundo.
 
-    2. FILTRO ESTRICTO ANTI-TUTORIALES (❌ PROHIBIDO):
+    2. FILTRO ESTRICTO ANTI-TUTORIALES (PROHIBIDO):
        - Descarta inmediatamente cualquier nota que sea un tutorial, guía paso a paso, lista de prompts ("10 prompts para...", "Cómo usar ChatGPT para..."), cursos promocionales o artículos de opinión sin sustento noticioso. Solo selecciona hechos, lanzamientos, estudios o noticias reales.
 
     3. DOBLE VERIFICACIÓN (FACT-CHECKING):
