@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-import google.generativeai as genai
+from google import genai
 
 def summarize_news(news_items):
     api_key = os.getenv("GEMINI_API_KEY")
@@ -9,8 +9,8 @@ def summarize_news(news_items):
         logging.error("No se encontró GEMINI_API_KEY en las variables de entorno.")
         return None
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-3.8-flash')
+    # Inicializamos el cliente moderno de Google Gen AI
+    client = genai.Client(api_key=api_key)
 
     # Convertimos las noticias extraídas a texto para que la IA las evalúe
     noticias_texto = ""
@@ -36,7 +36,7 @@ def summarize_news(news_items):
        - Noticia 2 (Tema: IA con la educación | Enfoque Jóvenes 18-30 años): Cómo la IA está cambiando la forma de estudiar, investigar o prepararse profesionalmente en la universidad (preferentemente en México).
        - Noticia 3 (Tema: IA internacional educación): Una noticia relevante a nivel global sobre regulaciones, descubrimientos o adopciones de IA en universidades del mundo.
 
-    2. FILTRO ESTRICTO ANTI-TUTORIALES (PROHIBIDO):
+    2. FILTRO ESTRICTO ANTI-TUTORIALES (❌ PROHIBIDO):
        - Descarta inmediatamente cualquier nota que sea un tutorial, guía paso a paso, lista de prompts ("10 prompts para...", "Cómo usar ChatGPT para..."), cursos promocionales o artículos de opinión sin sustento noticioso. Solo selecciona hechos, lanzamientos, estudios o noticias reales.
 
     3. DOBLE VERIFICACIÓN (FACT-CHECKING):
@@ -53,7 +53,7 @@ def summarize_news(news_items):
       "news": [
         {{
           "t": "Título atractivo de la noticia 1 (Innovador / México)",
-          "s": "Nombre del medio · Fecha corta (ej. 15 oct 2026) · [Prioridad Alta]",
+          "s": "Nombre del medio · Fecha corta · [Prioridad Alta]",
           "u": "URL exacta y verificada de la noticia original",
           "desc": "Resumen dinámico de 2 a 3 líneas enfocado en qué pasó y cómo impacta a los jóvenes universitarios.",
           "why": "Por qué le importa a un alumno de 18-30 años + Motivo de prioridad.",
@@ -80,17 +80,20 @@ def summarize_news(news_items):
         }}
       ]
     }}
-    Nota para el campo "r" (roles): usa combinaciones de ["est", "doc", "inv", "coord", "dir"], priorizando "est" (Estudiantes).
 
     LISTA DE NOTICIAS A EVALUAR:
     {noticias_texto}
     """
 
     try:
-        response = model.generate_content(prompt)
+        # Llamada utilizando el modelo actual y estable de la API de Google
+        response = client.models.generate_content(
+            model='gemini-3.8-flash',
+            contents=prompt,
+        )
+        
         texto_limpio = response.text.strip()
         
-        # Limpiar posibles etiquetas markdown si el modelo las incluye
         if texto_limpio.startswith("```json"):
             texto_limpio = texto_limpio[7:]
         if texto_limpio.startswith("```"):
